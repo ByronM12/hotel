@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>El hotel necesita acceso a la cámara para fotografiar habitaciones e instalaciones.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>El hotel necesita acceso al micrófono para grabar videos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>El hotel necesita acceso a la galería para importar imágenes.</string>
 </dict>
 </plist>
