@@ -1,6 +1,6 @@
 // lib/screens/gallery_screen.dart
 
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
