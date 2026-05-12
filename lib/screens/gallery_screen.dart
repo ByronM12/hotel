@@ -1,5 +1,3 @@
-// lib/screens/gallery_screen.dart
-
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +5,11 @@ import 'package:intl/intl.dart';
 import '../models/media_file.dart';
 import '../services/media_service.dart';
 import 'media_detail_screen.dart';
+import 'video_player_screen.dart';
 
 class GalleryScreen extends StatefulWidget {
-  const GalleryScreen({super.key});
+  final MediaCategory? initialCategory;
+  const GalleryScreen({super.key, this.initialCategory});
 
   @override
   State<GalleryScreen> createState() => _GalleryScreenState();
@@ -20,6 +20,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
   MediaType? _filterType;
   String _searchQuery = '';
   bool _isGridView = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _filterCategory = widget.initialCategory;
+  }
 
   List<MediaFile> _filteredFiles(List<MediaFile> all) {
     return all.where((f) {
@@ -39,15 +45,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
     return Consumer<MediaService>(
       builder: (context, service, _) {
         final filtered = _filteredFiles(service.files);
-
         return Scaffold(
           backgroundColor: const Color(0xFFF5F0E8),
           appBar: AppBar(
             backgroundColor: const Color(0xFF2C1810),
             foregroundColor: Colors.white,
-            title: const Text(
-              'GALERÍA',
-              style: TextStyle(letterSpacing: 3, fontWeight: FontWeight.bold),
+            title: Text(
+              _filterCategory != null ? _filterCategory!.label.toUpperCase() : 'GALERÍA',
+              style: const TextStyle(letterSpacing: 3, fontWeight: FontWeight.bold),
             ),
             centerTitle: true,
             actions: [
@@ -59,7 +64,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           ),
           body: Column(
             children: [
-              // Search bar
+              // Buscador
               Container(
                 color: const Color(0xFF2C1810),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -80,7 +85,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
               ),
 
-              // Filter chips
+              // Chips de filtro
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -89,37 +94,26 @@ class _GalleryScreenState extends State<GalleryScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     children: [
-                      // Type filters
-                      _FilterChip(
+                      _Chip(
                         label: 'Todo',
                         isSelected: _filterType == null && _filterCategory == null,
-                        onTap: () => setState(() {
-                          _filterType = null;
-                          _filterCategory = null;
-                        }),
+                        onTap: () => setState(() { _filterType = null; _filterCategory = null; }),
                       ),
-                      _FilterChip(
+                      _Chip(
                         label: '📷 Fotos',
                         isSelected: _filterType == MediaType.image,
-                        onTap: () => setState(() {
-                          _filterType = MediaType.image;
-                          _filterCategory = null;
-                        }),
+                        onTap: () => setState(() { _filterType = MediaType.image; _filterCategory = null; }),
                       ),
-                      _FilterChip(
+                      _Chip(
                         label: '🎥 Videos',
                         isSelected: _filterType == MediaType.video,
-                        onTap: () => setState(() {
-                          _filterType = MediaType.video;
-                          _filterCategory = null;
-                        }),
+                        onTap: () => setState(() { _filterType = MediaType.video; _filterCategory = null; }),
                       ),
                       const SizedBox(width: 8),
                       Container(width: 1, height: 24, color: Colors.grey[300]),
                       const SizedBox(width: 8),
-                      // Category filters
-                      ...MediaCategory.values.map((cat) => _FilterChip(
-                        label: _catEmoji(cat),
+                      ...MediaCategory.values.map((cat) => _Chip(
+                        label: _catLabel(cat),
                         isSelected: _filterCategory == cat,
                         onTap: () => setState(() {
                           _filterCategory = cat == _filterCategory ? null : cat;
@@ -131,19 +125,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
               ),
 
-              // Stats bar
+              // Contador
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 color: const Color(0xFFF5F0E8),
                 child: Row(
                   children: [
-                    Text(
-                      '${filtered.length} archivo${filtered.length != 1 ? "s" : ""}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                      ),
-                    ),
+                    Text('${filtered.length} archivo${filtered.length != 1 ? "s" : ""}',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                     const Spacer(),
                     FutureBuilder<int>(
                       future: service.getTotalSize(),
@@ -156,7 +145,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
               ),
 
-              // Grid or list
               Expanded(
                 child: service.isLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -181,14 +169,14 @@ class _GalleryScreenState extends State<GalleryScreen> {
           Icon(Icons.photo_library_outlined, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No hay archivos',
+            _filterCategory != null
+                ? 'No hay archivos en ${_filterCategory!.label}'
+                : 'No hay archivos',
             style: TextStyle(fontSize: 18, color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Captura fotos o videos con la cámara',
-            style: TextStyle(color: Colors.grey[500]),
-          ),
+          Text('Captura fotos o videos con la cámara',
+              style: TextStyle(color: Colors.grey[500])),
         ],
       ),
     );
@@ -198,14 +186,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
     return GridView.builder(
       padding: const EdgeInsets.all(8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
+        crossAxisCount: 3, crossAxisSpacing: 4, mainAxisSpacing: 4,
       ),
       itemCount: files.length,
       itemBuilder: (ctx, i) => _GridItem(
         file: files[i],
-        onTap: () => _openDetail(files[i]),
+        onTap: () => _openFile(files[i]),
         onDelete: () => _confirmDelete(files[i], service),
       ),
     );
@@ -217,17 +203,21 @@ class _GalleryScreenState extends State<GalleryScreen> {
       itemCount: files.length,
       itemBuilder: (ctx, i) => _ListItem(
         file: files[i],
-        onTap: () => _openDetail(files[i]),
+        onTap: () => _openFile(files[i]),
         onDelete: () => _confirmDelete(files[i], service),
       ),
     );
   }
 
-  void _openDetail(MediaFile file) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => MediaDetailScreen(file: file)),
-    );
+  // ── FIX: abre reproductor de video para videos, detalle para fotos ──────
+  void _openFile(MediaFile file) {
+    if (file.type == MediaType.video) {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (_) => VideoPlayerScreen(file: file)));
+    } else {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (_) => MediaDetailScreen(file: file)));
+    }
   }
 
   Future<void> _confirmDelete(MediaFile file, MediaService service) async {
@@ -246,29 +236,26 @@ class _GalleryScreenState extends State<GalleryScreen> {
         ],
       ),
     );
-    if (ok == true) {
-      await service.deleteFile(file.id);
-    }
+    if (ok == true) await service.deleteFile(file.id);
   }
 
-  String _catEmoji(MediaCategory cat) {
+  String _catLabel(MediaCategory cat) {
     switch (cat) {
-      case MediaCategory.habitacion: return '🛏 Hab.';
-      case MediaCategory.lobby: return '🏨 Lobby';
+      case MediaCategory.habitacion:  return '🛏 Hab.';
+      case MediaCategory.lobby:       return '🏨 Lobby';
       case MediaCategory.restaurante: return '🍽 Rest.';
-      case MediaCategory.piscina: return '🏊 Piscina';
-      case MediaCategory.eventos: return '🎉 Eventos';
-      case MediaCategory.otro: return '📁 Otro';
+      case MediaCategory.piscina:     return '🏊 Piscina';
+      case MediaCategory.eventos:     return '🎉 Eventos';
+      case MediaCategory.otro:        return '📁 Otro';
     }
   }
 }
 
-class _FilterChip extends StatelessWidget {
+class _Chip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-
-  const _FilterChip({required this.label, required this.isSelected, required this.onTap});
+  const _Chip({required this.label, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -281,18 +268,14 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF8B6914) : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF8B6914) : Colors.grey[300]!,
-          ),
+          border: Border.all(color: isSelected ? const Color(0xFF8B6914) : Colors.grey[300]!),
         ),
-        child: Text(
-          label,
+        child: Text(label,
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.grey[700],
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
+          )),
       ),
     );
   }
@@ -302,7 +285,6 @@ class _GridItem extends StatelessWidget {
   final MediaFile file;
   final VoidCallback onTap;
   final VoidCallback onDelete;
-
   const _GridItem({required this.file, required this.onTap, required this.onDelete});
 
   @override
@@ -318,39 +300,30 @@ class _GridItem extends StatelessWidget {
             child: file.type == MediaType.image
                 ? Image.file(file.file, fit: BoxFit.cover)
                 : Container(
-                    color: Colors.grey[800],
+                    color: Colors.grey[850],
                     child: const Center(
                       child: Icon(Icons.play_circle_fill, color: Colors.white, size: 40),
                     ),
                   ),
           ),
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 0, left: 0, right: 0,
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
+                  begin: Alignment.bottomCenter, end: Alignment.topCenter,
                   colors: [Colors.black.withOpacity(0.7), Colors.transparent],
                 ),
               ),
-              child: Text(
-                file.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 10),
-              ),
+              child: Text(file.title,
+                maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white, fontSize: 10)),
             ),
           ),
           if (file.type == MediaType.video)
-            const Positioned(
-              top: 4,
-              right: 4,
-              child: Icon(Icons.videocam, color: Colors.white, size: 16),
-            ),
+            const Positioned(top: 4, right: 4,
+              child: Icon(Icons.videocam, color: Colors.white, size: 16)),
         ],
       ),
     );
@@ -361,7 +334,6 @@ class _ListItem extends StatelessWidget {
   final MediaFile file;
   final VoidCallback onTap;
   final VoidCallback onDelete;
-
   const _ListItem({required this.file, required this.onTap, required this.onDelete});
 
   @override
@@ -375,14 +347,12 @@ class _ListItem extends StatelessWidget {
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(6),
           child: SizedBox(
-            width: 60,
-            height: 60,
+            width: 60, height: 60,
             child: file.type == MediaType.image
                 ? Image.file(file.file, fit: BoxFit.cover)
                 : Container(
                     color: Colors.grey[800],
-                    child: const Icon(Icons.videocam, color: Colors.white),
-                  ),
+                    child: const Icon(Icons.videocam, color: Colors.white)),
           ),
         ),
         title: Text(file.title, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -393,9 +363,16 @@ class _ListItem extends StatelessWidget {
             Text(fmt.format(file.createdAt), style: const TextStyle(fontSize: 11)),
           ],
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.red),
-          onPressed: onDelete,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (file.type == MediaType.video)
+              const Icon(Icons.play_circle_outline, color: Color(0xFF8B6914), size: 20),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: onDelete,
+            ),
+          ],
         ),
       ),
     );

@@ -194,7 +194,9 @@ class HomeScreen extends StatelessWidget {
                             count: count,
                             onTap: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const GalleryScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => GalleryScreen(initialCategory: cat),
+                              ),
                             ),
                           );
                         }).toList(),

@@ -13,6 +13,19 @@ enum MediaCategory {
   otro,
 }
 
+extension MediaCategoryLabel on MediaCategory {
+  String get label {
+    switch (this) {
+      case MediaCategory.habitacion:  return 'Habitación';
+      case MediaCategory.lobby:       return 'Lobby';
+      case MediaCategory.restaurante: return 'Restaurante';
+      case MediaCategory.piscina:     return 'Piscina';
+      case MediaCategory.eventos:     return 'Eventos';
+      case MediaCategory.otro:        return 'Otro';
+    }
+  }
+}
+
 class MediaFile {
   final String id;
   final String path;
