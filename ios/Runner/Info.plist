@@ -72,5 +72,9 @@
 	<string>El hotel necesita acceso al micrófono para grabar videos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>El hotel necesita acceso a la galería para importar imágenes.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>La ubicación se utiliza para guardar la posición GPS durante la captura de sensores.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>El acceso al movimiento permite capturar datos de acelerómetro y giroscopio.</string>
 </dict>
 </plist>

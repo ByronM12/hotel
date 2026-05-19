@@ -14,22 +14,22 @@ class HotelProvider extends ChangeNotifier {
   List<HotelRoom> get rooms => List.unmodifiable(_rooms);
   List<HotelRoom> get favorites => List.unmodifiable(_favorites);
 
-  void initialize() {
-    _rooms = _service.fetchHotels();
+  Future<void> initialize() async {
+    _rooms = await _service.fetchHotels();
     notifyListeners();
   }
 
   bool isFavorite(String roomId) => _favorites.any((room) => room.id == roomId);
 
-  void createHotel({
+  Future<void> createHotel({
     required String nombre,
     required String location,
     required String descripcion,
     required double precio,
     required double rating,
     required List<String> servicios,
-  }) {
-    _service.createHotel(
+  }) async {
+    await _service.createHotel(
       nombre: nombre,
       location: location,
       descripcion: descripcion,
@@ -38,11 +38,11 @@ class HotelProvider extends ChangeNotifier {
       servicios: servicios,
     );
 
-    _rooms = _service.fetchHotels();
+    _rooms = await _service.fetchHotels();
     notifyListeners();
   }
 
-  void updateHotel({
+  Future<void> updateHotel({
     required int index,
     required String nombre,
     required String location,
@@ -50,7 +50,7 @@ class HotelProvider extends ChangeNotifier {
     required double precio,
     required double rating,
     required List<String> servicios,
-  }) {
+  }) async {
     final current = _rooms[index];
     final updated = HotelRoom(
       id: current.id,
@@ -63,8 +63,8 @@ class HotelProvider extends ChangeNotifier {
       servicios: servicios,
     );
 
-    _service.updateHotel(index: index, room: updated);
-    _rooms = _service.fetchHotels();
+    await _service.updateHotel(index: index, room: updated);
+    _rooms = await _service.fetchHotels();
 
     final favoriteIndex = _favorites.indexWhere((room) => room.id == updated.id);
     if (favoriteIndex != -1) {
@@ -74,9 +74,9 @@ class HotelProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  HotelRoom deleteHotel(int index) {
-    final removed = _service.deleteHotel(index);
-    _rooms = _service.fetchHotels();
+  Future<HotelRoom> deleteHotel(int index) async {
+    final removed = await _service.deleteHotel(index);
+    _rooms = await _service.fetchHotels();
     _favorites.removeWhere((room) => room.id == removed.id);
     notifyListeners();
     return removed;

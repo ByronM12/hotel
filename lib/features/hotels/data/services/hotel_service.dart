@@ -1,19 +1,21 @@
-import '../../../../core/app_constants.dart';
-import '../../../../data/hotel_model.dart';
+import 'package:hotel/data/hotel_model.dart';
+import 'package:hotel/services/database_service.dart';
 
 class HotelService {
-  final List<HotelRoom> _hotels = List.from(AppData.defaultRooms);
+  final DatabaseService _db = DatabaseService.instance;
 
-  List<HotelRoom> fetchHotels() => List.from(_hotels);
+  Future<List<HotelRoom>> fetchHotels() async {
+    return _db.fetchHotels();
+  }
 
-  HotelRoom createHotel({
+  Future<HotelRoom> createHotel({
     required String nombre,
     required String location,
     required String descripcion,
     required double precio,
     required double rating,
     required List<String> servicios,
-  }) {
+  }) async {
     final room = HotelRoom(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       nombre: nombre,
@@ -24,15 +26,19 @@ class HotelService {
       fotos: const [],
       servicios: servicios,
     );
-
-    _hotels.insert(0, room);
+    await _db.insertHotel(room);
     return room;
   }
 
-  HotelRoom updateHotel({required int index, required HotelRoom room}) {
-    _hotels[index] = room;
+  Future<HotelRoom> updateHotel({required int index, required HotelRoom room}) async {
+    await _db.updateHotel(room);
     return room;
   }
 
-  HotelRoom deleteHotel(int index) => _hotels.removeAt(index);
+  Future<HotelRoom> deleteHotel(int index) async {
+    final rooms = await fetchHotels();
+    final removed = rooms[index];
+    await _db.deleteHotel(removed.id);
+    return removed;
+  }
 }

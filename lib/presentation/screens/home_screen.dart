@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/app_constants.dart';
 import '../../features/hotels/data/services/hotel_service.dart';
@@ -6,6 +7,9 @@ import '../../features/hotels/presentation/controllers/home_lifecycle_controller
 import '../../features/hotels/presentation/logic/hotel_form_logic.dart';
 import '../../features/hotels/presentation/providers/hotel_provider.dart';
 import '../../features/hotels/presentation/widgets/hotel_form_sheet.dart';
+import '../../features/sensors/sensor_provider.dart';
+import '../../features/sensors/sensor_screen.dart';
+import '../../screens/gallery_screen.dart';
 import 'detail_screen.dart';
 import 'favorites_screen.dart';
 import 'profile_screen.dart';
@@ -115,14 +119,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _saveHotel({int? editingIndex}) {
+  Future<void> _saveHotel({int? editingIndex}) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final services =
         HotelFormLogic.parseServices(_formControllers['servicios']!.text);
 
     if (editingIndex == null) {
-      _hotelProvider.createHotel(
+      await _hotelProvider.createHotel(
         nombre: _formControllers['nombre']!.text.trim(),
         location: _formControllers['ubicacion']!.text.trim(),
         descripcion: _formControllers['descripcion']!.text.trim(),
@@ -131,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         servicios: services,
       );
     } else {
-      _hotelProvider.updateHotel(
+      await _hotelProvider.updateHotel(
         index: editingIndex,
         nombre: _formControllers['nombre']!.text.trim(),
         location: _formControllers['ubicacion']!.text.trim(),
@@ -148,10 +152,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         : 'Hotel actualizado correctamente');
   }
 
-  void _deleteHotel(int index) {
-    final removedRoom = _hotelProvider.deleteHotel(index);
+  Future<void> _deleteHotel(int index) async {
+    final removedRoom = await _hotelProvider.deleteHotel(index);
 
     _showLifecycleMessage('Hotel eliminado: ${removedRoom.nombre}');
+  }
+
+  void _openSensors() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => SensorProvider(),
+          child: const SensorScreen(),
+        ),
+      ),
+    );
+  }
+
+  void _openMedia() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const GalleryScreen()),
+    );
+  }
+
+  Widget _buildHeaderActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _HeaderActionButton(
+            label: 'Sensores',
+            icon: Icons.sensors,
+            onTap: _openSensors,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _HeaderActionButton(
+            label: 'Medios',
+            icon: Icons.photo_library,
+            onTap: _openMedia,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -185,6 +230,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         height: 3,
                         color: AppColors.gold,
                       ),
+                      const SizedBox(height: 16),
+                      _buildHeaderActions(),
                     ],
                   ),
                 ),
@@ -343,6 +390,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeaderActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HeaderActionButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 20),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.charcoal,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
       ),
     );
   }
