@@ -19,8 +19,9 @@ class DatabaseService {
     final dbPath = p.join(await getDatabasesPath(), 'hotel_app.db');
     return openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -51,8 +52,24 @@ class DatabaseService {
       )
     ''');
 
+    await database.execute('''
+      CREATE TABLE favorites (
+        hotel_id TEXT PRIMARY KEY
+      )
+    ''');
+
     for (final room in AppData.defaultRooms) {
       await database.insert('hotels', room.toMap());
+    }
+  }
+
+  Future<void> _onUpgrade(Database database, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await database.execute('''
+        CREATE TABLE IF NOT EXISTS favorites (
+          hotel_id TEXT PRIMARY KEY
+        )
+      ''');
     }
   }
 
@@ -80,6 +97,24 @@ class DatabaseService {
 
   Future<void> deleteHotel(String id) async {
     await (await db).delete('hotels', where: 'id = ?', whereArgs: [id]);
+    await (await db).delete('favorites', where: 'hotel_id = ?', whereArgs: [id]);
+  }
+
+  Future<Set<String>> fetchFavoriteIds() async {
+    final rows = await (await db).query('favorites');
+    return rows.map((r) => r['hotel_id'] as String).toSet();
+  }
+
+  Future<void> addFavorite(String hotelId) async {
+    await (await db).insert(
+      'favorites',
+      {'hotel_id': hotelId},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<void> removeFavorite(String hotelId) async {
+    await (await db).delete('favorites', where: 'hotel_id = ?', whereArgs: [hotelId]);
   }
 
   Future<List<SensorReading>> fetchReadings({

@@ -41,4 +41,8 @@ class HotelService {
     await _db.deleteHotel(removed.id);
     return removed;
   }
+
+  Future<Set<String>> fetchFavoriteIds() => _db.fetchFavoriteIds();
+  Future<void> addFavorite(String hotelId) => _db.addFavorite(hotelId);
+  Future<void> removeFavorite(String hotelId) => _db.removeFavorite(hotelId);
 }

@@ -1,71 +1,89 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import '../models/location_model.dart';
 
+/// Servicio de ubicación en Firebase con modo degradado.
+/// Si Firebase no está configurado, todas las operaciones son no-ops silenciosos.
 class FirebaseLocationService {
-  final FirebaseDatabase _db = FirebaseDatabase.instance;
+  final String userId;
+  final bool available;
 
-  // Ruta en la base de datos: /user_locations/{userId}/
+  FirebaseLocationService({
+    required this.userId,
+    this.available = true,
+  });
+
   static const String _basePath = 'user_locations';
 
-  // ID de sesión del usuario (en producción usar Firebase Auth UID)
-  final String userId;
+  DatabaseReference? get _userRef {
+    if (!available) return null;
+    try {
+      return FirebaseDatabase.instance.ref('$_basePath/$userId');
+    } catch (e) {
+      debugPrint('FirebaseLocationService: $e');
+      return null;
+    }
+  }
 
-  FirebaseLocationService({required this.userId});
-
-  DatabaseReference get _userRef => _db.ref('$_basePath/$userId');
-
-  // ─── Guardar ubicación actual ─────────────────────────────────────────
-
-  /// Sube la ubicación actual a Firebase (sobrescribe la anterior).
   Future<void> updateCurrentLocation(LocationModel location) async {
+    final ref = _userRef;
+    if (ref == null) return;
     try {
-      await _userRef.child('current').set(location.toMap());
+      await ref.child('current').set(location.toMap());
     } catch (e) {
-      // En modo sin conexión Firebase guarda en caché local automáticamente
+      debugPrint('Firebase updateCurrentLocation: $e');
     }
   }
 
-  /// Guarda un punto del historial de movimiento.
   Future<void> pushLocationHistory(LocationModel location) async {
+    final ref = _userRef;
+    if (ref == null) return;
     try {
-      await _userRef.child('history').push().set(location.toMap());
+      await ref.child('history').push().set(location.toMap());
     } catch (e) {
-      // Firebase maneja la persistencia offline automáticamente
+      debugPrint('Firebase pushLocationHistory: $e');
     }
   }
 
-  // ─── Escuchar cambios en tiempo real ─────────────────────────────────
-
-  /// Stream que escucha la ubicación actual en tiempo real desde Firebase.
   Stream<LocationModel?> watchCurrentLocation() {
-    return _userRef.child('current').onValue.map((event) {
+    final ref = _userRef;
+    if (ref == null) return const Stream.empty();
+    return ref.child('current').onValue.map((event) {
       final data = event.snapshot.value;
       if (data == null) return null;
-      return LocationModel.fromMap(data as Map<dynamic, dynamic>);
+      try {
+        return LocationModel.fromMap(data as Map<dynamic, dynamic>);
+      } catch (_) {
+        return null;
+      }
     });
   }
 
-  /// Escucha el historial de ubicaciones (últimas N entradas).
   Stream<List<LocationModel>> watchLocationHistory({int limit = 50}) {
-    return _userRef
-        .child('history')
-        .limitToLast(limit)
-        .onValue
-        .map((event) {
+    final ref = _userRef;
+    if (ref == null) return Stream.value([]);
+    return ref.child('history').limitToLast(limit).onValue.map((event) {
       final data = event.snapshot.value;
-      if (data == null) return [];
-
-      final map = data as Map<dynamic, dynamic>;
-      return map.values
-          .map((v) => LocationModel.fromMap(v as Map<dynamic, dynamic>))
-          .toList()
-        ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      if (data == null) return <LocationModel>[];
+      try {
+        final map = data as Map<dynamic, dynamic>;
+        return map.values
+            .map((v) => LocationModel.fromMap(v as Map<dynamic, dynamic>))
+            .toList()
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      } catch (_) {
+        return <LocationModel>[];
+      }
     });
   }
-
-  // ─── Limpiar datos ────────────────────────────────────────────────────
 
   Future<void> clearHistory() async {
-    await _userRef.child('history').remove();
+    final ref = _userRef;
+    if (ref == null) return;
+    try {
+      await ref.child('history').remove();
+    } catch (e) {
+      debugPrint('Firebase clearHistory: $e');
+    }
   }
 }

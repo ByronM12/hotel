@@ -33,6 +33,8 @@ class MapProvider extends ChangeNotifier {
   bool _isMapReady = false;
   bool get isMapReady => _isMapReady;
 
+  bool _initialized = false;
+
   int _updateCount = 0;
   int get updateCount => _updateCount;
 
@@ -42,7 +44,10 @@ class MapProvider extends ChangeNotifier {
   // ─── Acciones ────────────────────────────────────────────────────────────
 
   /// Inicializa el provider: pide permisos y empieza rastreo.
+  /// Idempotente: si ya se inicializó, no hace nada.
   Future<void> initialize() async {
+    if (_initialized && _status == TrackingStatus.tracking) return;
+    _initialized = true;
     _setStatus(TrackingStatus.requesting);
 
     final started = await _locationService.startTracking();

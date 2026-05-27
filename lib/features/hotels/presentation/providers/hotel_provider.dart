@@ -9,17 +9,19 @@ class HotelProvider extends ChangeNotifier {
   final HotelService _service;
 
   List<HotelRoom> _rooms = [];
-  final List<HotelRoom> _favorites = [];
+  Set<String> _favoriteIds = {};
 
   List<HotelRoom> get rooms => List.unmodifiable(_rooms);
-  List<HotelRoom> get favorites => List.unmodifiable(_favorites);
+  List<HotelRoom> get favorites =>
+      _rooms.where((room) => _favoriteIds.contains(room.id)).toList();
 
   Future<void> initialize() async {
     _rooms = await _service.fetchHotels();
+    _favoriteIds = await _service.fetchFavoriteIds();
     notifyListeners();
   }
 
-  bool isFavorite(String roomId) => _favorites.any((room) => room.id == roomId);
+  bool isFavorite(String roomId) => _favoriteIds.contains(roomId);
 
   Future<void> createHotel({
     required String nombre,
@@ -65,29 +67,26 @@ class HotelProvider extends ChangeNotifier {
 
     await _service.updateHotel(index: index, room: updated);
     _rooms = await _service.fetchHotels();
-
-    final favoriteIndex = _favorites.indexWhere((room) => room.id == updated.id);
-    if (favoriteIndex != -1) {
-      _favorites[favoriteIndex] = updated;
-    }
-
     notifyListeners();
   }
 
   Future<HotelRoom> deleteHotel(int index) async {
     final removed = await _service.deleteHotel(index);
     _rooms = await _service.fetchHotels();
-    _favorites.removeWhere((room) => room.id == removed.id);
+    if (_favoriteIds.remove(removed.id)) {
+      await _service.removeFavorite(removed.id);
+    }
     notifyListeners();
     return removed;
   }
 
-  void toggleFavorite(HotelRoom room) {
-    final existingIndex = _favorites.indexWhere((item) => item.id == room.id);
-    if (existingIndex != -1) {
-      _favorites.removeAt(existingIndex);
+  Future<void> toggleFavorite(HotelRoom room) async {
+    if (_favoriteIds.contains(room.id)) {
+      _favoriteIds.remove(room.id);
+      await _service.removeFavorite(room.id);
     } else {
-      _favorites.add(room);
+      _favoriteIds.add(room.id);
+      await _service.addFavorite(room.id);
     }
     notifyListeners();
   }
