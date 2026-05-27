@@ -1,6 +1,6 @@
-import 'package:hotel/core/app_constants.dart';
-import 'package:hotel/data/hotel_model.dart';
-import 'package:hotel/data/sensor_model.dart';
+import '../core/app_constants.dart';
+import '../data/hotel_model.dart';
+import '../data/sensor_model.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 

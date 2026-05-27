@@ -10,6 +10,7 @@ import '../../features/hotels/presentation/widgets/hotel_form_sheet.dart';
 import '../../features/sensors/sensor_provider.dart';
 import '../../features/sensors/sensor_screen.dart';
 import '../../screens/gallery_screen.dart';
+import 'map_screen.dart';
 import 'detail_screen.dart';
 import 'favorites_screen.dart';
 import 'profile_screen.dart';
@@ -146,7 +147,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    Navigator.pop(context);
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
     _showLifecycleMessage(editingIndex == null
         ? 'Hotel creado correctamente'
         : 'Hotel actualizado correctamente');
@@ -193,6 +196,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             label: 'Medios',
             icon: Icons.photo_library,
             onTap: _openMedia,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _HeaderActionButton(
+            label: 'Mapa',
+            icon: Icons.map_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MapScreen()),
+              );
+            },
           ),
         ),
       ],
@@ -413,7 +429,7 @@ class _HeaderActionButton extends StatelessWidget {
       icon: Icon(icon, size: 20),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.charcoal,
+        backgroundColor: AppColors.darkCharcoal,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

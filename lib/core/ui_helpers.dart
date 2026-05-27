@@ -26,7 +26,7 @@ Widget buildSettingsTile({
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.gold.withOpacity(0.1),
+                  color: AppColors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: AppColors.gold, size: 20),
@@ -44,7 +44,7 @@ Widget buildSettingsTile({
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.gold,
+            activeThumbColor: AppColors.gold,
             inactiveTrackColor: Colors.grey[300],
           ),
         ],
@@ -73,7 +73,7 @@ Widget buildTapTile({
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.1),
+                    color: AppColors.gold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: AppColors.gold, size: 20),
@@ -129,7 +129,7 @@ Widget buildStatCard(String label, String value, IconData icon) {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColors.gold.withOpacity(0.1),
+            color: AppColors.gold.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: AppColors.gold, size: 24),

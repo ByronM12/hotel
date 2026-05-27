@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Firebase Configuration - Add your actual values from google-services.json -->
+    <string name="firebase_database_url">https://your-project.firebaseio.com</string>
+    <string name="firebase_api_key">AIzaSyDummyKeyForTesting</string>
+    <string name="firebase_app_id">1:123456789:android:abcdefg1234567</string>
+    <string name="firebase_project_id">your-project</string>
+</resources>

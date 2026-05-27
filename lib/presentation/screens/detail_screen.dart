@@ -56,7 +56,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Theme.of(context).colorScheme.primary.withOpacity(0.9),
+                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
                           const Color(0xFF111827),
                         ],
                       ),
@@ -137,7 +137,7 @@ class _DetailScreenState extends State<DetailScreen> {
             top: 48,
             left: 16,
             child: CircleAvatar(
-              backgroundColor: Colors.white.withOpacity(0.92),
+              backgroundColor: Colors.white.withValues(alpha: 0.92),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 color: const Color(0xFF1E1E1E),
@@ -221,7 +221,7 @@ class _InfoPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

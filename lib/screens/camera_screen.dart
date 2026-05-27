@@ -1,8 +1,8 @@
 // lib/screens/camera_screen.dart
 
 import 'dart:io';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import '../models/media_file.dart';
 import 'save_media_dialog.dart';
 

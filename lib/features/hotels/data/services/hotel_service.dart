@@ -1,5 +1,5 @@
-import 'package:hotel/data/hotel_model.dart';
-import 'package:hotel/services/database_service.dart';
+import '../../../../data/hotel_model.dart';
+import '../../../../services/database_service.dart';
 
 class HotelService {
   final DatabaseService _db = DatabaseService.instance;

@@ -1,77 +1,145 @@
+// Versión actualizada con coordenadas de hoteles para el mapa
+
 import 'package:flutter/material.dart';
+import '../data/hotel_model.dart';
 
-import '../../data/hotel_model.dart';
+// ─── COLORES LUXURY ─────────────────────────────────────────────────────────
 
-/// PALETA DE COLORES 
 class AppColors {
   static const Color gold = Color(0xFFD4AF37);
-  static const Color charcoal = Color(0xFF1A1A1A);
+  static const Color darkCharcoal = Color(0xFF1A1A1A);
   static const Color lightBg = Color(0xFFFAFAFA);
   static const Color textDark = Color(0xFF2C3E50);
-  static const Color greyLight = Color(0xFFF0F4F8);
+  static const Color textMuted = Color(0xFF8A9BB0);
 }
 
-/// DATOS INICIALES (hoteles)
+// ─── MODELO DE HOTEL CON UBICACIÓN ──────────────────────────────────────────
+
+class HotelLocation {
+  final String id;
+  final String name;
+  final String address;
+  final double rating;
+  final double latitude;
+  final double longitude;
+  final String priceRange;
+  final List<String> services;
+
+  const HotelLocation({
+    required this.id,
+    required this.name,
+    required this.address,
+    required this.rating,
+    required this.latitude,
+    required this.longitude,
+    required this.priceRange,
+    required this.services,
+  });
+}
+
+// ─── DATOS DE LA APP ─────────────────────────────────────────────────────────
+
 class AppData {
-  static final List<HotelRoom> defaultRooms = [
-    HotelRoom(
-      id: '1',
-      nombre: 'Suite Ocean View',
-      location: 'Manta, Ecuador',
-      descripcion: 'Una suite amplia con vista directa al mar y acabados premium.',
-      precio: 180,
-      rating: 4.9,
-      fotos: const [],
-      servicios: const ['WiFi', 'Piscina', 'Spa', 'Desayuno'],
+  /// Hoteles con coordenadas reales en Cuenca, Ecuador
+  static const List<HotelLocation> defaultHotels = [
+    HotelLocation(
+      id: 'h1',
+      name: 'Hotel Oro Verde',
+      address: 'Av. Ordóñez Lazo, Cuenca',
+      rating: 4.8,
+      latitude: -2.8968,
+      longitude: -79.0234,
+      priceRange: '\$\$\$',
+      services: ['WiFi', 'Piscina', 'Spa', 'Restaurante'],
     ),
-    HotelRoom(
-      id: '2',
-      nombre: 'Loft Urbano',
-      location: 'Quito, Ecuador',
-      descripcion: 'Espacio moderno con diseño minimalista ideal para estadías cortas.',
-      precio: 120,
+    HotelLocation(
+      id: 'h2',
+      name: 'Crespo Hotel',
+      address: 'Calle Larga 7-93, Cuenca',
+      rating: 4.5,
+      latitude: -2.8975,
+      longitude: -79.0033,
+      priceRange: '\$\$',
+      services: ['WiFi', 'Bar', 'Terraza'],
+    ),
+    HotelLocation(
+      id: 'h3',
+      name: 'Hotel Santa Lucía',
+      address: 'Antonio Borrero 8-44, Cuenca',
       rating: 4.7,
-      fotos: const [],
-      servicios: const ['WiFi', 'Aire acondicionado', 'Gimnasio'],
+      latitude: -2.8985,
+      longitude: -79.0045,
+      priceRange: '\$\$\$',
+      services: ['WiFi', 'Restaurante', 'Sala de reuniones'],
     ),
-    HotelRoom(
-      id: '3',
-      nombre: 'Penthouse Skyline',
-      location: 'Guayaquil, Ecuador',
-      descripcion: 'Vistas panorámicas, diseño elegante y máxima comodidad.',
-      precio: 260,
-      rating: 5.0,
-      fotos: const [],
-      servicios: const ['WiFi', 'Piscina', 'Restaurante', 'Servicio a la habitación'],
+    HotelLocation(
+      id: 'h4',
+      name: 'Mansión Alcázar',
+      address: 'Bolívar 12-55, Cuenca',
+      rating: 4.9,
+      latitude: -2.8995,
+      longitude: -79.0060,
+      priceRange: '\$\$\$\$',
+      services: ['WiFi', 'Spa', 'Restaurante gourmet', 'Jardín'],
+    ),
+    HotelLocation(
+      id: 'h5',
+      name: 'Hotel El Dorado',
+      address: 'Gran Colombia 7-87, Cuenca',
+      rating: 4.3,
+      latitude: -2.8955,
+      longitude: -79.0050,
+      priceRange: '\$\$',
+      services: ['WiFi', 'Desayuno', 'Parqueadero'],
     ),
   ];
+
+  /// Compat: lista de `HotelRoom` usada por el servicio de BD local
+  static List<HotelRoom> get defaultRooms => defaultHotels.map((h) {
+        return HotelRoom(
+          id: h.id,
+          nombre: h.name,
+          location: h.address,
+          descripcion: '${h.name} - ${h.address}',
+          precio: 80.0 + (h.rating - 4.0) * 20.0,
+          rating: h.rating,
+          fotos: [],
+          servicios: h.services,
+        );
+      }).toList();
 }
 
-/// MAPEO DE ICONOS POR SERVICIO
+// ─── ICONOS DE SERVICIOS ─────────────────────────────────────────────────────
+
 class ServiceIcons {
-  static IconData getIcon(String service) {
-    final lower = service.toLowerCase();
-    return switch (lower) {
-      _ when lower.contains('wifi') => Icons.wifi,
-      _ when lower.contains('aire') => Icons.ac_unit,
-      _ when lower.contains('parking') => Icons.local_parking,
-      _ when lower.contains('piscina') => Icons.pool,
-      _ when lower.contains('spa') => Icons.spa,
-      _ when lower.contains('desayuno') => Icons.free_breakfast,
-      _ when lower.contains('gimnasio') => Icons.fitness_center,
-      _ when lower.contains('restaurante') => Icons.restaurant,
-      _ when lower.contains('servicio') => Icons.room_service,
-      _ => Icons.check_circle_outline,
-    };
+  static IconData forService(String service) {
+    switch (service.toLowerCase()) {
+      case 'wifi':
+        return Icons.wifi_rounded;
+      case 'piscina':
+        return Icons.pool_rounded;
+      case 'spa':
+        return Icons.spa_rounded;
+      case 'restaurante':
+      case 'restaurante gourmet':
+        return Icons.restaurant_rounded;
+      case 'bar':
+        return Icons.local_bar_rounded;
+      case 'terraza':
+        return Icons.deck_rounded;
+      case 'desayuno':
+        return Icons.free_breakfast_rounded;
+      case 'parqueadero':
+        return Icons.local_parking_rounded;
+      case 'sala de reuniones':
+        return Icons.meeting_room_rounded;
+      case 'jardín':
+        return Icons.park_rounded;
+      default:
+        return Icons.star_rounded;
+    }
   }
-}
 
-/// EXTENSIONES DE UTILIDAD
-extension ColorExt on Color {
-  Color withCustomOpacity(double opacity) => withOpacity(opacity);
-}
-
-extension ListExt<T> on List<T> {
-  bool containsWhere(bool Function(T) test) => any(test);
-  int findIndexWhere(bool Function(T) test) => indexWhere(test);
+  // Alias para compatibilidad con llamadas anteriores
+  static IconData getIcon(String service) => forService(service);
 }

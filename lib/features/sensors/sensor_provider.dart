@@ -107,7 +107,7 @@ class SensorProvider extends ChangeNotifier {
     notifyListeners();
 
     var count = 0;
-    _accelSub = accelerometerEvents.listen((event) async {
+    _accelSub = accelerometerEventStream().listen((event) async {
       count++;
       if (count % 5 == 0) {
         final reading = SensorReading(
@@ -157,7 +157,7 @@ class SensorProvider extends ChangeNotifier {
     notifyListeners();
 
     var count = 0;
-    _gyroSub = gyroscopeEvents.listen((event) async {
+    _gyroSub = gyroscopeEventStream().listen((event) async {
       count++;
       if (count % 5 == 0) {
         final reading = SensorReading(

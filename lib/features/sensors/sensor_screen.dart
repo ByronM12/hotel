@@ -89,19 +89,6 @@ class _GpsTab extends StatelessWidget {
               title: 'GPS — Ubicación actual',
               status: prov.gpsStatus,
               isActive: prov.isCapturingGps,
-              child: last == null
-                  ? const Text('Sin datos aún',
-                      style: TextStyle(color: Colors.grey))
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _DataRow('Latitud', '${last.latitud.toStringAsFixed(6)}°'),
-                        _DataRow('Longitud', '${last.longitud.toStringAsFixed(6)}°'),
-                        _DataRow('Altitud', '${last.altitud.toStringAsFixed(1)} m'),
-                        _DataRow('Hora',
-                            DateFormat('HH:mm:ss').format(last.timestamp)),
-                      ],
-                    ),
               actions: Row(
                 children: [
                   Expanded(
@@ -125,6 +112,19 @@ class _GpsTab extends StatelessWidget {
                   ),
                 ],
               ),
+              child: last == null
+                  ? const Text('Sin datos aún',
+                      style: TextStyle(color: Colors.grey))
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _DataRow('Latitud', '${last.latitud.toStringAsFixed(6)}°'),
+                        _DataRow('Longitud', '${last.longitud.toStringAsFixed(6)}°'),
+                        _DataRow('Altitud', '${last.altitud.toStringAsFixed(1)} m'),
+                        _DataRow('Hora',
+                            DateFormat('HH:mm:ss').format(last.timestamp)),
+                      ],
+                    ),
             ),
             const SizedBox(height: 16),
             _HistoryCard(
@@ -170,6 +170,20 @@ class _MotionTab extends StatelessWidget {
               title: '${type.label} — Tiempo real',
               status: status,
               isActive: isCapt,
+              actions: Row(
+                children: [
+                  Expanded(
+                    child: _SensorButton(
+                      label: isCapt ? 'Detener' : 'Iniciar',
+                      icon: isCapt ? Icons.stop_circle_outlined : Icons.play_circle_outline,
+                      isActive: isCapt,
+                      onTap: () => isAccel
+                          ? (isCapt ? prov.stopAccelerometer() : prov.startAccelerometer())
+                          : (isCapt ? prov.stopGyroscope() : prov.startGyroscope()),
+                    ),
+                  ),
+                ],
+              ),
               child: last == null
                   ? const Text('Sin datos aún',
                       style: TextStyle(color: Colors.grey))
@@ -183,26 +197,6 @@ class _MotionTab extends StatelessWidget {
                             '${last.magnitud.toStringAsFixed(3)} $unit'),
                       ],
                     ),
-              actions: _SensorButton(
-                label: isCapt ? 'Detener captura' : 'Iniciar captura',
-                icon: isCapt ? Icons.stop_circle_outlined : Icons.play_circle_outline,
-                isActive: isCapt,
-                onTap: () {
-                  if (isCapt) {
-                    if (isAccel) {
-                      prov.stopAccelerometer();
-                    } else {
-                      prov.stopGyroscope();
-                    }
-                  } else {
-                    if (isAccel) {
-                      prov.startAccelerometer();
-                    } else {
-                      prov.startGyroscope();
-                    }
-                  }
-                },
-              ),
             ),
             const SizedBox(height: 16),
             if (history.isNotEmpty) _ChartCard(readings: history, color: color),
@@ -260,7 +254,7 @@ class _StatusCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 22),
@@ -441,7 +435,7 @@ class _ChartCard extends StatelessWidget {
                       dotData: FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: color.withOpacity(0.12),
+                        color: color.withValues(alpha: 0.12),
                       ),
                     ),
                   ],
@@ -515,7 +509,7 @@ class _HistoryCard extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: readings.length > 10 ? 10 : readings.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, thickness: 0.5),
+                separatorBuilder: (_, _) => const Divider(height: 1, thickness: 0.5),
                 itemBuilder: (ctx, i) {
                   final r = readings[i];
                   return ListTile(
