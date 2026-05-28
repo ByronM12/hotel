@@ -11,7 +11,7 @@ import 'package:hotel/main.dart';
 
 void main() {
   testWidgets('Home screen shows welcome title', (WidgetTester tester) async {
-    await tester.pumpWidget(const HotelApp());
+    await tester.pumpWidget(const HotelApp(firebaseAvailable: false, userId: 'test'));
 
     expect(find.text('Descubre tu lugar ideal'), findsOneWidget);
   });

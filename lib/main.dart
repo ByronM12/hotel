@@ -8,6 +8,7 @@ import 'data/services/location_service.dart';
 import 'data/services/firebase_location_service.dart';
 import 'presentation/providers/map_provider.dart';
 import 'presentation/screens/home_screen.dart';
+import 'services/media_service.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -24,9 +25,9 @@ Future<void> main() async {
     debugPrint('✅ Firebase inicializado correctamente');
   } catch (e) {
     firebaseAvailable = false;
-    debugPrint('⚠️ Firebase no disponible: $e');
+    debugPrint('⚠️  Firebase no disponible: $e');
     debugPrint('    La app funciona sin sincronización en la nube.');
-    debugPrint('    Ejecuta: flutterfire configure  para activarlo.');
+    debugPrint('    Configura firebase con: flutterfire configure');
   }
 
   runApp(HotelApp(firebaseAvailable: firebaseAvailable, userId: userId));
@@ -36,12 +37,10 @@ Future<String> _deviceUserId() async {
   final prefs = await SharedPreferences.getInstance();
   const key = 'device_user_id';
   final existing = prefs.getString(key);
-  if (existing != null && existing.isNotEmpty) {
-    return existing;
-  }
+  if (existing != null && existing.isNotEmpty) return existing;
 
   final generatedId =
-      'device_${DateTime.now().millisecondsSinceEpoch ~/ 100000}_${DateTime.now().microsecondsSinceEpoch}';
+      'device_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecondsSinceEpoch}';
   await prefs.setString(key, generatedId);
   return generatedId;
 }
@@ -60,7 +59,14 @@ class HotelApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
+        // ── Multimedia (Galería / Cámara) ────────────────────────────────
+        // DEBE estar en el nivel raíz para que todas las rutas lo accedan
+        ChangeNotifierProvider<MediaService>(
+          create: (_) => MediaService()..loadFiles(),
+        ),
+
+        // ── Mapa y geolocalización ───────────────────────────────────────
+        ChangeNotifierProvider<MapProvider>(
           create: (_) => MapProvider(
             locationService: LocationService(),
             firebaseService: FirebaseLocationService(

@@ -2,18 +2,21 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/media_file.dart';
 import '../services/media_service.dart';
 
 class SaveMediaDialog extends StatefulWidget {
   final String filePath;
   final MediaType type;
+  // MediaService se pasa directamente para evitar problemas de contexto
+  // en showDialog (el contexto del builder no hereda el provider)
+  final MediaService mediaService;
 
   const SaveMediaDialog({
     super.key,
     required this.filePath,
     required this.type,
+    required this.mediaService,
   });
 
   @override
@@ -44,9 +47,8 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
     }
 
     setState(() => _saving = true);
-    final service = context.read<MediaService>();
 
-    await service.addFile(
+    await widget.mediaService.addFile(
       sourcePath: widget.filePath,
       type: widget.type,
       category: _selectedCategory,
@@ -83,7 +85,6 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
             ),
             const SizedBox(height: 20),
 
-            // Preview thumbnail
             if (widget.type == MediaType.image)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -97,7 +98,6 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
 
             const SizedBox(height: 16),
 
-            // Title
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -109,7 +109,6 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Category
             DropdownButtonFormField<MediaCategory>(
               value: _selectedCategory,
               decoration: const InputDecoration(
@@ -127,7 +126,6 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Room number (optional)
             TextField(
               controller: _roomController,
               keyboardType: TextInputType.number,
@@ -140,7 +138,6 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Description
             TextField(
               controller: _descController,
               maxLines: 3,
@@ -153,7 +150,6 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
             ),
             const SizedBox(height: 24),
 
-            // Action buttons
             Row(
               children: [
                 Expanded(
@@ -193,11 +189,11 @@ class _SaveMediaDialogState extends State<SaveMediaDialog> {
   String _categoryLabel(MediaCategory cat) {
     switch (cat) {
       case MediaCategory.habitacion: return '🛏 Habitación';
-      case MediaCategory.lobby: return '🏨 Lobby';
+      case MediaCategory.lobby:      return '🏨 Lobby';
       case MediaCategory.restaurante: return '🍽 Restaurante';
-      case MediaCategory.piscina: return '🏊 Piscina';
-      case MediaCategory.eventos: return '🎉 Eventos';
-      case MediaCategory.otro: return '📁 Otro';
+      case MediaCategory.piscina:    return '🏊 Piscina';
+      case MediaCategory.eventos:    return '🎉 Eventos';
+      case MediaCategory.otro:       return '📁 Otro';
     }
   }
 }

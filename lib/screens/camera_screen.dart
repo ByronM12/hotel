@@ -3,7 +3,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:provider/provider.dart';
 import '../models/media_file.dart';
+import '../services/media_service.dart';
 import 'save_media_dialog.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -152,11 +154,16 @@ class _CameraScreenState extends State<CameraScreen>
     if (_capturedPath == null) return;
 
     final type = _isVideoMode ? MediaType.video : MediaType.image;
+    // Obtenemos MediaService antes de abrir el dialog para evitar
+    // el ProviderNotFoundException dentro del builder del showDialog
+    final mediaService = context.read<MediaService>();
+
     final result = await showDialog<bool>(
       context: context,
       builder: (_) => SaveMediaDialog(
         filePath: _capturedPath!,
         type: type,
+        mediaService: mediaService,
       ),
     );
 

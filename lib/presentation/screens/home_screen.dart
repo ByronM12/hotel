@@ -174,9 +174,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _openMedia() {
+    // GalleryScreen consume MediaService que está en el MultiProvider raíz.
+    // Al usar el contexto actual (que SÍ tiene acceso al provider), la
+    // navegación funciona correctamente.
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const GalleryScreen()),
+      MaterialPageRoute(builder: (ctx) => const GalleryScreen()),
     );
   }
 

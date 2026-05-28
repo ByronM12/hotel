@@ -25,6 +25,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
   void initState() {
     super.initState();
     _filterCategory = widget.initialCategory;
+    // Recargar archivos al abrir la galería para que estén actualizados
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<MediaService>().loadFiles();
+    });
   }
 
   List<MediaFile> _filteredFiles(List<MediaFile> all) {
